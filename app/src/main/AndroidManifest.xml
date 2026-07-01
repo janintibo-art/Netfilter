@@ -43,6 +43,10 @@
             android:name=".ThemesActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ScriptActivity"
+            android:exported="false" />
+
         <!-- VpnService en premier plan : type "specialUse" obligatoire -->
         <service
             android:name=".FilterVpnService"

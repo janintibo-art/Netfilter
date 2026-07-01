@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Script navigateur"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/script_tuto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:lineSpacingExtra="3dp"
+            android:layout_marginBottom="20dp" />
+
+        <Button
+            android:id="@+id/script_install_tm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Installer Tampermonkey (Firefox)"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/script_copy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Copier le script"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/script_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enregistrer le fichier .user.js" />
+    </LinearLayout>
+</ScrollView>

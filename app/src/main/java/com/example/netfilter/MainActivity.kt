@@ -108,6 +108,10 @@ class MainActivity : Activity() {
             startActivity(Intent(this, ThemesActivity::class.java))
         }
 
+        findViewById<Button>(R.id.script_button).setOnClickListener {
+            startActivity(Intent(this, ScriptActivity::class.java))
+        }
+
         findViewById<Button>(R.id.apps_button).setOnClickListener {
             startActivity(Intent(this, AppsActivity::class.java))
         }

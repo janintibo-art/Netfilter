@@ -9,6 +9,20 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v1.7)
+
+- **Onglet « Script navigateur »** — nouvel écran (bouton sur l'écran principal) avec un
+  mode d'emploi et le userscript **NetFilter Web** embarqué. Il permet de bloquer des sites
+  entiers dans le navigateur ET de les masquer des résultats de recherche (ce que le filtrage
+  DNS ne peut pas faire). Deux façons de le récupérer :
+  - **Copier le script** (presse-papier) → à coller dans Tampermonkey (le plus simple) ;
+  - **Enregistrer le fichier** `.user.js` où l'on veut (sélecteur système, aucune permission).
+  Plus un bouton pour installer Tampermonkey sur Firefox. Le script reprend les 5 catégories
+  thématiques + liste blanche + domaines perso.
+  *Rappel : ce script ne bloque pas la pub/les traqueurs (utiliser l'app NetFilter et/ou uBlock
+  Origin pour ça) ; il gère le blocage de sites entiers et le masquage dans les recherches.*
+
 ## Nouveautés (v1.6)
 
 - **Écran « Filtres thématiques »** — regroupe des catégories entières, activables d'un appui
