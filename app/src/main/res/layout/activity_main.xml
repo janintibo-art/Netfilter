@@ -9,12 +9,14 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <TextView
+        <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="NetFilter"
-            android:textSize="28sp"
-            android:textStyle="bold" />
+            android:layout_height="52dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitStart"
+            android:src="@drawable/header_logo"
+            android:contentDescription="NetFilter"
+            android:layout_marginBottom="6dp" />
 
         <TextView
             android:id="@+id/status_text"

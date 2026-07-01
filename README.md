@@ -14,6 +14,14 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v2.2)
+
+- **Nouvelle identité visuelle** — icône d'application (bouclier + entonnoir) déclinée à toutes
+  les tailles d'écran, et logo affiché en haut de l'écran principal (à la place du titre texte).
+  Icône en mode « simple » (PNG multi-densités) ; fonds blanc/noir rendus transparents pour un
+  affichage propre.
+
 ## Nouveautés (v2.1)
 
 - **Widget de statistiques** (app) — un second widget d'accueil affiche le nombre de requêtes
