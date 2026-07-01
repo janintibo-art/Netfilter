@@ -11,6 +11,14 @@ data class ListSource(
     val url: String
 )
 
+/** Un filtre thématique intégré (liste embarquée dans l'app), activable par l'utilisateur. */
+data class ThemeFilter(
+    val id: String,
+    val name: String,
+    val description: String,
+    val asset: String
+)
+
 /**
  * Gère toutes les règles de filtrage ET les réglages.
  * Sources : catalogue de listes activables, listes perso (URL), blocage DoH,
@@ -25,6 +33,7 @@ object BlockListRepository {
     private const val KEY_ENABLED_LISTS = "enabled_lists"
     private const val KEY_BLOCK_DOH = "block_doh"
     private const val KEY_BLOCK_BOLLORE = "block_bollore"
+    private const val KEY_ENABLED_THEMES = "enabled_themes"
     private const val KEY_UPSTREAM = "upstream_dns"
     private const val KEY_START_ON_BOOT = "start_on_boot"
     private const val KEY_EXCLUDED_APPS = "excluded_apps"
@@ -62,6 +71,35 @@ object BlockListRepository {
         )
     )
 
+    /** Filtres thématiques intégrés (listes embarquées, désactivés par défaut). */
+    val THEMES = listOf(
+        ThemeFilter(
+            "bollore", "Médias du groupe Bolloré",
+            "CNews, Europe 1, JDD, Canal+, Dailymotion, magazines Prisma…",
+            "bollore-blocklist.txt"
+        ),
+        ThemeFilter(
+            "farright", "Médias d'extrême droite",
+            "Titres souvent décrits comme d'extrême droite. Catégorie subjective.",
+            "farright-blocklist.txt"
+        ),
+        ThemeFilter(
+            "multinationals", "Multinationales",
+            "Sites de grandes marques (hors géants du web pour ne rien casser).",
+            "multinationals-blocklist.txt"
+        ),
+        ThemeFilter(
+            "football", "Football",
+            "Sites de foot et de mercato.",
+            "football-blocklist.txt"
+        ),
+        ThemeFilter(
+            "sport", "Sport (général)",
+            "Sites de sport toutes disciplines.",
+            "sport-blocklist.txt"
+        )
+    )
+
     /** Ensemble des domaines à BLOQUER (la liste blanche est gérée à part par le service). */
     fun load(context: Context): Set<String> {
         val result = HashSet<String>()
@@ -82,10 +120,12 @@ object BlockListRepository {
                 }
             }
         }
-        if (isBlockBollore(context)) {
-            runCatching {
-                context.assets.open("bollore-blocklist.txt").bufferedReader().forEachLine {
-                    parseLine(it)?.let(result::add)
+        for (theme in THEMES) {
+            if (isThemeEnabled(context, theme.id)) {
+                runCatching {
+                    context.assets.open(theme.asset).bufferedReader().forEachLine {
+                        parseLine(it)?.let(result::add)
+                    }
                 }
             }
         }
@@ -181,12 +221,23 @@ object BlockListRepository {
         prefs(context).edit().putBoolean(KEY_BLOCK_DOH, enabled).apply()
     }
 
-    // --- Blocage des médias Bolloré ---
-    fun isBlockBollore(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_BLOCK_BOLLORE, false)
+    // --- Filtres thématiques (listes intégrées, activables) ---
+    fun getEnabledThemeIds(context: Context): Set<String> {
+        val p = prefs(context)
+        // Migration : reprend l'ancien réglage "Bolloré" (v1.5) si les thèmes n'existent pas encore.
+        if (!p.contains(KEY_ENABLED_THEMES) && p.getBoolean(KEY_BLOCK_BOLLORE, false)) {
+            return setOf("bollore")
+        }
+        return p.getStringSet(KEY_ENABLED_THEMES, emptySet()) ?: emptySet()
+    }
 
-    fun setBlockBollore(context: Context, enabled: Boolean) {
-        prefs(context).edit().putBoolean(KEY_BLOCK_BOLLORE, enabled).apply()
+    fun isThemeEnabled(context: Context, id: String): Boolean =
+        getEnabledThemeIds(context).contains(id)
+
+    fun setThemeEnabled(context: Context, id: String, enabled: Boolean) {
+        val set = getEnabledThemeIds(context).toMutableSet()
+        if (enabled) set.add(id) else set.remove(id)
+        prefs(context).edit().putStringSet(KEY_ENABLED_THEMES, set).apply()
     }
 
     // --- Résolveur DNS amont ---

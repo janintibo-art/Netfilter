@@ -8,6 +8,24 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v1.6)
+
+- **Écran « Filtres thématiques »** — regroupe des catégories entières, activables d'un appui
+  (appliquées immédiatement). Le blocage Bolloré y a été déplacé, et 4 catégories s'ajoutent :
+  - **Médias d'extrême droite** — titres souvent décrits ainsi par la presse et la recherche
+    (Valeurs actuelles, Frontières, Causeur, Boulevard Voltaire, Fdesouche… + quelques
+    internationaux). **Catégorie subjective et contestée** : c'est un classement éditorial,
+    pas un fait objectif. Liste dans `assets/farright-blocklist.txt`, à modifier librement.
+  - **Multinationales** — sites de grandes marques (McDo, Nestlé, Coca-Cola, Nike, Shell…).
+    Les **géants du web** (Google, Amazon, Apple, Microsoft, Meta…) sont **volontairement exclus**
+    car les bloquer au DNS casse une grande partie d'Internet. `assets/multinationals-blocklist.txt`.
+  - **Football** — sites de foot et de mercato. `assets/football-blocklist.txt`.
+  - **Sport (général)** — sites de sport toutes disciplines. `assets/sport-blocklist.txt`.
+
+  Toutes ces listes sont **éditables** (fichiers dans `app/src/main/assets/`). Un domaine
+  bloqué à tort peut aussi être mis en liste blanche depuis l'écran principal.
+
 ## Nouveautés (v1.5)
 
 - **Choix des listes de blocage** — nouvel écran « Choisir les listes de blocage » avec un

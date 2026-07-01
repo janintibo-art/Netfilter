@@ -39,6 +39,10 @@
             android:name=".ListsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ThemesActivity"
+            android:exported="false" />
+
         <!-- VpnService en premier plan : type "specialUse" obligatoire -->
         <service
             android:name=".FilterVpnService"
