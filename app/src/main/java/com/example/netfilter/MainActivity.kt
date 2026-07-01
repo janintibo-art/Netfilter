@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.VpnService
 import android.os.Bundle
+import android.text.InputType
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
@@ -158,23 +159,67 @@ class MainActivity : Activity() {
     }
 
     private fun showResolverDialog() {
-        val names = RESOLVERS.keys.toTypedArray()
+        val names = RESOLVERS.keys.toMutableList().apply { add("Personnalisé (saisir une IP)…") }
         val ips = RESOLVERS.values.toList()
         val current = BlockListRepository.getUpstreamDns(this)
-        val checked = ips.indexOf(current).let { if (it < 0) 0 else it }
+        // coche l'entrée courante, ou "Personnalisé" si l'IP n'est pas dans la liste
+        val checked = ips.indexOf(current).let { if (it < 0) names.size - 1 else it }
         AlertDialog.Builder(this)
             .setTitle("Résolveur DNS en amont")
-            .setSingleChoiceItems(names, checked) { dialog, which ->
-                BlockListRepository.setUpstreamDns(this, ips[which])
-                updateResolverButton(); reloadService(); dialog.dismiss()
+            .setSingleChoiceItems(names.toTypedArray(), checked) { dialog, which ->
+                if (which < ips.size) {
+                    BlockListRepository.setUpstreamDns(this, ips[which])
+                    updateResolverButton(); reloadService(); dialog.dismiss()
+                } else {
+                    dialog.dismiss()
+                    showCustomDnsDialog()
+                }
+            }
+            .setNeutralButton("Réinitialiser (${BlockListRepository.DEFAULT_UPSTREAM})") { _, _ ->
+                BlockListRepository.setUpstreamDns(this, BlockListRepository.DEFAULT_UPSTREAM)
+                updateResolverButton(); reloadService()
+                Toast.makeText(this, "DNS remis par défaut", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Annuler", null)
             .show()
     }
 
+    private fun showCustomDnsDialog() {
+        val input = EditText(this).apply {
+            setText(BlockListRepository.getUpstreamDns(this@MainActivity))
+            inputType = InputType.TYPE_CLASS_TEXT
+            hint = "ex. 1.1.1.1 ou 2606:4700:4700::1111"
+        }
+        AlertDialog.Builder(this)
+            .setTitle("DNS personnalisé (adresse IP)")
+            .setView(input)
+            .setPositiveButton("Enregistrer") { _, _ ->
+                val ip = input.text.toString().trim()
+                if (isValidIp(ip)) {
+                    BlockListRepository.setUpstreamDns(this, ip)
+                    updateResolverButton(); reloadService()
+                    Toast.makeText(this, "DNS réglé sur $ip", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Adresse IP invalide", Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNegativeButton("Annuler", null)
+            .show()
+    }
+
+    /** Validation simple d'une IP (IPv4 en 4 octets, ou IPv6 grossièrement). */
+    private fun isValidIp(s: String): Boolean {
+        val t = s.trim()
+        if (t.isEmpty()) return false
+        if (t.contains(':')) return t.matches(Regex("[0-9a-fA-F:]+")) && t.length >= 2
+        val parts = t.split(".")
+        if (parts.size != 4) return false
+        return parts.all { p -> p.toIntOrNull()?.let { it in 0..255 } == true }
+    }
+
     private fun updateResolverButton() {
         val ip = BlockListRepository.getUpstreamDns(this)
-        val name = RESOLVERS.entries.firstOrNull { it.value == ip }?.key ?: ip
+        val name = RESOLVERS.entries.firstOrNull { it.value == ip }?.key ?: "Personnalisé ($ip)"
         resolverButton.text = "Résolveur : $name"
     }
 

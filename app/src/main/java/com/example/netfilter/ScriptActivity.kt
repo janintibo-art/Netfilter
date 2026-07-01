@@ -98,6 +98,10 @@ class ScriptActivity : Activity() {
 
         Teste en tapant cnews.fr dans la barre d'adresse : tu devrais voir une page « Site bloqué ». Fais une recherche Google sur « cnews » : les résultats du site doivent avoir disparu.
 
+        ── Téléphone ou ordinateur ? ──
+
+        Le script propose aussi (menu Tampermonkey → « Identité ») de te faire passer pour un ordinateur 🖥️ ou un téléphone 📱. C'est du « meilleur effort » : certains sites peuvent l'ignorer. Pour un résultat GARANTI, utilise en plus le mode intégré de Firefox : menu ⋮ → « Site pour ordinateur ». Les deux se combinent bien.
+
         Astuce : les listes de domaines sont écrites en haut du script. Tu peux les modifier directement dans Tampermonkey (onglet du script) pour ajouter ou retirer des sites.
     """.trimIndent()
 }

@@ -10,6 +10,19 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v1.8)
+
+- **DNS personnalisable** — le choix du résolveur (écran principal) gagne une option
+  « Personnalisé (saisir une IP) » pour entrer n'importe quel DNS (IPv4 ou IPv6), et un
+  bouton « Réinitialiser » pour revenir au défaut (8.8.8.8) quand on veut.
+- **Identité navigateur (téléphone / ordinateur)** — ajoutée au **script Tampermonkey**
+  (menu → « Identité : automatique / Ordinateur / Téléphone »). L'app ne peut pas changer
+  ça (le User-Agent est envoyé chiffré par le navigateur, hors de portée d'un filtre DNS) :
+  c'est donc côté navigateur. Le script agit au mieux côté JavaScript ; pour un résultat
+  garanti, combiner avec le mode « Site pour ordinateur » de Firefox (expliqué dans l'onglet
+  Script navigateur).
+
 ## Nouveautés (v1.7)
 
 - **Onglet « Script navigateur »** — nouvel écran (bouton sur l'écran principal) avec un

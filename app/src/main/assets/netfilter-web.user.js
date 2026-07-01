@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NetFilter Web
 // @namespace    netfilter.web
-// @version      1.0
-// @description  Bloque l'accès à des catégories de sites (Bolloré, extrême droite, multinationales, foot, sport…) ET les masque des résultats de recherche. Compagnon navigateur de l'app NetFilter.
+// @version      1.1
+// @description  Bloque l'accès à des catégories de sites (Bolloré, extrême droite, multinationales, foot, sport…), les masque des résultats de recherche, et permet de se faire passer pour un ordinateur ou un téléphone. Compagnon navigateur de l'app NetFilter.
 // @author       toi
 // @match        *://*/*
 // @run-at       document-start
@@ -92,12 +92,41 @@
         whitelist: 'nfw-whitelist',
         blockNav: 'nfw-block-nav',
         hideSearch: 'nfw-hide-search',
-        hideAll: 'nfw-hide-all'
+        hideAll: 'nfw-hide-all',
+        ua: 'nfw-ua'
     };
     const getVal = (k, d) => GM_getValue(k, d);
     const setVal = (k, v) => GM_setValue(k, v);
     const getArr = k => { try { return JSON.parse(getVal(k, '[]')); } catch (e) { return []; } };
     const setArr = (k, a) => setVal(k, JSON.stringify(a));
+
+    /* ------------------------------------------------------------------ *
+     *  IDENTITÉ NAVIGATEUR (User-Agent) — « téléphone » ou « ordinateur »
+     *  Best-effort : override côté JavaScript. Pour un résultat GARANTI,
+     *  utilise aussi le mode « Site pour ordinateur » de Firefox.
+     *  (Peut être bloqué par la sécurité de certains sites — CSP.)
+     * ------------------------------------------------------------------ */
+    function applyIdentity() {
+        const mode = getVal(K.ua, 'auto');
+        if (mode !== 'desktop' && mode !== 'mobile') return;
+        const DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0';
+        const MOBILE = 'Mozilla/5.0 (Android 14; Mobile; rv:128.0) Gecko/20100101 Firefox/128.0';
+        const ua = mode === 'desktop' ? DESKTOP : MOBILE;
+        const platform = mode === 'desktop' ? 'Win32' : 'Linux aarch64';
+        const touch = mode === 'desktop' ? 0 : 5;
+        const code = '(function(){try{' +
+            'Object.defineProperty(Navigator.prototype,"userAgent",{get:function(){return ' + JSON.stringify(ua) + ';},configurable:true});' +
+            'Object.defineProperty(Navigator.prototype,"platform",{get:function(){return ' + JSON.stringify(platform) + ';},configurable:true});' +
+            'Object.defineProperty(Navigator.prototype,"maxTouchPoints",{get:function(){return ' + touch + ';},configurable:true});' +
+            '}catch(e){}})();';
+        try {
+            const s = document.createElement('script');
+            s.textContent = code;
+            (document.head || document.documentElement || document).appendChild(s);
+            s.remove();
+        } catch (e) {}
+    }
+    applyIdentity();
 
     const isCatEnabled = id => getVal(K.cat(id), false) === true;
     const blockNavOn = () => getVal(K.blockNav, true) === true;
@@ -293,6 +322,18 @@
             (hideAllOn() ? '✅' : '⬜') + ' Masquer les liens sur TOUS les sites',
             () => toggleAndReload(K.hideAll, false)
         );
+
+        // Identité navigateur (téléphone / ordinateur)
+        const uaMode = getVal(K.ua, 'auto');
+        GM_registerMenuCommand((uaMode === 'auto' ? '✅' : '⬜') + ' Identité : automatique', () => {
+            setVal(K.ua, 'auto'); location.reload();
+        });
+        GM_registerMenuCommand((uaMode === 'desktop' ? '✅' : '⬜') + ' Identité : Ordinateur 🖥️', () => {
+            setVal(K.ua, 'desktop'); location.reload();
+        });
+        GM_registerMenuCommand((uaMode === 'mobile' ? '✅' : '⬜') + ' Identité : Téléphone 📱', () => {
+            setVal(K.ua, 'mobile'); location.reload();
+        });
 
         // Règles perso
         GM_registerMenuCommand('➕ Ajouter un domaine à bloquer', () => {
