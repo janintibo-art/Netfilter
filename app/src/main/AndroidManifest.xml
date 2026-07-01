@@ -47,6 +47,14 @@
             android:name=".ScriptActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ScheduleActivity"
+            android:exported="false" />
+
+        <receiver
+            android:name=".ScheduleReceiver"
+            android:exported="false" />
+
         <!-- VpnService en premier plan : type "specialUse" obligatoire -->
         <service
             android:name=".FilterVpnService"

@@ -194,6 +194,20 @@
             android:layout_marginBottom="8dp" />
 
         <Button
+            android:id="@+id/profiles_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Profils rapides"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/schedule_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Programmation horaire"
+            android:layout_marginBottom="8dp" />
+
+        <Button
             android:id="@+id/apps_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

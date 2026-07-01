@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NetFilter Web
 // @namespace    netfilter.web
-// @version      1.1
-// @description  Bloque l'accès à des catégories de sites (Bolloré, extrême droite, multinationales, foot, sport…), les masque des résultats de recherche, et permet de se faire passer pour un ordinateur ou un téléphone. Compagnon navigateur de l'app NetFilter.
+// @version      1.2
+// @description  Bloque des catégories de sites, les masque des recherches, cache les bannières cookies, et permet de se faire passer pour un ordinateur ou un téléphone. Compagnon navigateur de l'app NetFilter.
 // @author       toi
 // @match        *://*/*
 // @run-at       document-start
@@ -93,7 +93,8 @@
         blockNav: 'nfw-block-nav',
         hideSearch: 'nfw-hide-search',
         hideAll: 'nfw-hide-all',
-        ua: 'nfw-ua'
+        ua: 'nfw-ua',
+        cookies: 'nfw-cookies'
     };
     const getVal = (k, d) => GM_getValue(k, d);
     const setVal = (k, v) => GM_setValue(k, v);
@@ -132,6 +133,7 @@
     const blockNavOn = () => getVal(K.blockNav, true) === true;
     const hideSearchOn = () => getVal(K.hideSearch, true) === true;
     const hideAllOn = () => getVal(K.hideAll, false) === true;
+    const cookiesOn = () => getVal(K.cookies, true) === true;
 
     /* ------------------------------------------------------------------ *
      *  ENSEMBLES DE DOMAINES (bloqués / liste blanche)
@@ -270,17 +272,53 @@
         processResults(engineSelector, !onEngine && hideAllOn());
     }
 
-    // Débounce pour les résultats chargés dynamiquement (scroll infini, SPA).
+    /* ------------------------------------------------------------------ *
+     *  ANTI-BANNIÈRES COOKIES (masque les fenêtres de consentement)
+     * ------------------------------------------------------------------ */
+    const COOKIE_SELECTORS = [
+        '#onetrust-consent-sdk', '#onetrust-banner-sdk',
+        '#CybotCookiebotDialog', '#CybotCookiebotDialogBodyUnderlay',
+        '#didomi-host',
+        '.qc-cmp2-container', '#qc-cmp2-container',
+        '#axeptio_overlay',
+        '#tarteaucitronRoot', '#tarteaucitronAlertBig',
+        'div[id^="sp_message_container"]',
+        '#usercentrics-root', '#uc-banner-modal',
+        '#truste-consent-track', '.truste_overlay',
+        '#cmplz-cookiebanner-container', '.cmplz-cookiebanner',
+        '.cky-consent-container', '.cky-overlay',
+        '.osano-cm-window',
+        '#cookie-banner', '#cookie-consent', '#cookie-notice', '#cookieConsent',
+        '.cookie-banner', '.cookie-consent', '.cookie-notice', '.cookie-law-info-bar',
+        '#gdpr-cookie-message', '.gdpr-cookie-notice'
+    ];
+
+    function hideCookieBanners() {
+        for (const sel of COOKIE_SELECTORS) {
+            document.querySelectorAll(sel).forEach(el =>
+                el.style.setProperty('display', 'none', 'important'));
+        }
+        // rétablit le défilement souvent bloqué par ces bannières
+        document.documentElement.style.setProperty('overflow', 'auto', 'important');
+        if (document.body) document.body.style.setProperty('overflow', 'auto', 'important');
+    }
+
+    function processPage() {
+        try { runHiding(); } catch (e) {}
+        try { if (cookiesOn()) hideCookieBanners(); } catch (e) {}
+    }
+
+    // Débounce pour le contenu chargé dynamiquement (scroll infini, SPA, bannières tardives).
     let scheduled = false;
-    function scheduleHiding() {
+    function scheduleProcess() {
         if (scheduled) return;
         scheduled = true;
-        setTimeout(() => { scheduled = false; try { runHiding(); } catch (e) {} }, 250);
+        setTimeout(() => { scheduled = false; try { processPage(); } catch (e) {} }, 250);
     }
 
     function startObserver() {
-        runHiding();
-        const obs = new MutationObserver(scheduleHiding);
+        processPage();
+        const obs = new MutationObserver(scheduleProcess);
         obs.observe(document.documentElement, { childList: true, subtree: true });
     }
 
@@ -321,6 +359,10 @@
         GM_registerMenuCommand(
             (hideAllOn() ? '✅' : '⬜') + ' Masquer les liens sur TOUS les sites',
             () => toggleAndReload(K.hideAll, false)
+        );
+        GM_registerMenuCommand(
+            (cookiesOn() ? '✅' : '⬜') + ' Masquer les bannières cookies',
+            () => toggleAndReload(K.cookies, true)
         );
 
         // Identité navigateur (téléphone / ordinateur)

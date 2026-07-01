@@ -11,6 +11,23 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v1.9)
+
+- **Anti-bannières cookies** (script Tampermonkey v1.2) — masque automatiquement les fenêtres
+  de consentement cookies les plus courantes (OneTrust, Cookiebot, Didomi, Axeptio, tarteaucitron…)
+  et rétablit le défilement bloqué. Activable/désactivable dans le menu Tampermonkey.
+- **Programmation horaire** (app) — nouvel écran « Programmation horaire » : des règles qui
+  bloquent/débloquent une catégorie à une heure donnée, chaque jour (ex. bloquer les réseaux
+  sociaux à 22:00, débloquer à 07:00). Sans permission spéciale, économe en batterie (horaires
+  approximatifs), re-programmé automatiquement au redémarrage. *Garder le filtrage activé pour
+  que ça s'applique.*
+- **Profils rapides** (app) — bouton « Profils rapides » : bascule en un appui entre des
+  ensembles de réglages (Détente / Concentration / Strict), qui règlent d'un coup les catégories
+  et le DoH.
+- **Catégorie « Réseaux sociaux »** — nouveau filtre thématique (Facebook, Instagram, TikTok, X,
+  Reddit…). *Au DNS, bloque aussi les applications correspondantes, pas seulement les sites.*
+
 ## Nouveautés (v1.8)
 
 - **DNS personnalisable** — le choix du résolveur (écran principal) gagne une option

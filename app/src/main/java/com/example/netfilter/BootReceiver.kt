@@ -17,6 +17,9 @@ class BootReceiver : BroadcastReceiver() {
             action != "android.intent.action.QUICKBOOT_POWERON"
         ) return
 
+        // Les alarmes ne survivent pas au redémarrage : on les re-programme.
+        SchedulerManager.scheduleAll(context)
+
         if (!BlockListRepository.isStartOnBoot(context)) return
         if (VpnService.prepare(context) != null) return // autorisation VPN pas encore donnée
 

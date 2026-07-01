@@ -34,6 +34,14 @@ class MainActivity : Activity() {
         )
     }
 
+    private data class Profile(val name: String, val themes: Set<String>, val doh: Boolean)
+
+    private val profiles = listOf(
+        Profile("Détente (juste la pub)", emptySet(), true),
+        Profile("Concentration (coupe sport + réseaux)", setOf("football", "sport", "socialmedia"), true),
+        Profile("Strict (tout bloquer)", setOf("bollore", "farright", "multinationals", "football", "sport", "socialmedia"), true)
+    )
+
     private lateinit var statusText: TextView
     private lateinit var toggleButton: Button
     private lateinit var pauseButton: Button
@@ -111,6 +119,12 @@ class MainActivity : Activity() {
 
         findViewById<Button>(R.id.script_button).setOnClickListener {
             startActivity(Intent(this, ScriptActivity::class.java))
+        }
+
+        findViewById<Button>(R.id.profiles_button).setOnClickListener { showProfilesDialog() }
+
+        findViewById<Button>(R.id.schedule_button).setOnClickListener {
+            startActivity(Intent(this, ScheduleActivity::class.java))
         }
 
         findViewById<Button>(R.id.apps_button).setOnClickListener {
@@ -221,6 +235,22 @@ class MainActivity : Activity() {
         val ip = BlockListRepository.getUpstreamDns(this)
         val name = RESOLVERS.entries.firstOrNull { it.value == ip }?.key ?: "Personnalisé ($ip)"
         resolverButton.text = "Résolveur : $name"
+    }
+
+    private fun showProfilesDialog() {
+        val names = profiles.map { it.name }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Appliquer un profil")
+            .setItems(names) { _, i -> applyProfile(profiles[i]) }
+            .setNegativeButton("Annuler", null)
+            .show()
+    }
+
+    private fun applyProfile(p: Profile) {
+        BlockListRepository.setEnabledThemeIds(this, p.themes)
+        BlockListRepository.setDohBlocking(this, p.doh)
+        reloadService()
+        Toast.makeText(this, "Profil « ${p.name} » appliqué", Toast.LENGTH_LONG).show()
     }
 
     // --- Cycle du service ---

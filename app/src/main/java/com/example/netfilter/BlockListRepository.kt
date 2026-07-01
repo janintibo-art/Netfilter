@@ -97,6 +97,11 @@ object BlockListRepository {
             "sport", "Sport (général)",
             "Sites de sport toutes disciplines.",
             "sport-blocklist.txt"
+        ),
+        ThemeFilter(
+            "socialmedia", "Réseaux sociaux",
+            "Facebook, Instagram, TikTok, X, Reddit… (bloque aussi les apps).",
+            "socialmedia-blocklist.txt"
         )
     )
 
@@ -238,6 +243,11 @@ object BlockListRepository {
         val set = getEnabledThemeIds(context).toMutableSet()
         if (enabled) set.add(id) else set.remove(id)
         prefs(context).edit().putStringSet(KEY_ENABLED_THEMES, set).apply()
+    }
+
+    /** Remplace l'ensemble des thèmes activés (utilisé par les profils rapides). */
+    fun setEnabledThemeIds(context: Context, ids: Set<String>) {
+        prefs(context).edit().putStringSet(KEY_ENABLED_THEMES, HashSet(ids)).apply()
     }
 
     // --- Résolveur DNS amont ---
