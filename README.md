@@ -15,6 +15,18 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v2.3) — refonte visuelle
+
+- **Thème de marque** (bleu/teal du logo) appliqué à toute l'app : accent teal sur les
+  interrupteurs, cases et champs ; fond clair ; barre grise du haut supprimée.
+- **Écran principal en cartes** : sections « État », « Réglages », « Filtres personnalisés »
+  et « Outils » sur des cartes blanches arrondies, plus aérées et lisibles.
+- **Boutons arrondis hiérarchisés** : bouton principal (Démarrer/Arrêter) en dégradé
+  bleu→teal ; boutons secondaires discrets et arrondis, cohérents dans toute l'app.
+- **Bandeau d'état** avec pastille de couleur (vert = actif, orange = en pause, gris = arrêté).
+- Réalisé uniquement via thème + dessins, sans nouvelle dépendance.
+
 ## Nouveautés (v2.2)
 
 - **Nouvelle identité visuelle** — icône d'application (bouclier + entonnoir) déclinée à toutes

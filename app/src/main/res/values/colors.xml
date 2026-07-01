@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#2E7D32</color>
+    <!-- Palette de marque (dérivée du logo) -->
+    <color name="brand_navy">#0C2A47</color>
+    <color name="brand_blue">#1877D2</color>
+    <color name="brand_teal">#17BEC4</color>
+
+    <color name="bg">#F1F4F8</color>
+    <color name="card">#FFFFFF</color>
+    <color name="card_stroke">#E4E9F0</color>
+
+    <color name="text_primary">#0C2A47</color>
+    <color name="text_secondary">#5E6B7B</color>
+
+    <color name="btn_secondary_bg">#EAF1FA</color>
+    <color name="white">#FFFFFF</color>
+
+    <color name="dot_green">#2FA84F</color>
+    <color name="dot_gray">#A0AAB6</color>
+    <color name="dot_amber">#F0A83A</color>
+
+    <!-- conservé (icône, inoffensif) -->
+    <color name="ic_launcher_background">#0C2A47</color>
 </resources>

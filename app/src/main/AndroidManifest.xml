@@ -16,7 +16,7 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
         android:label="NetFilter"
-        android:theme="@android:style/Theme.Material.Light">
+        android:theme="@style/AppTheme">
 
         <activity
             android:name=".MainActivity"

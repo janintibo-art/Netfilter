@@ -1,225 +1,312 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="16dp">
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="52dp"
+            android:layout_height="50dp"
             android:adjustViewBounds="true"
             android:scaleType="fitStart"
             android:src="@drawable/header_logo"
             android:contentDescription="NetFilter"
-            android:layout_marginBottom="6dp" />
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="14dp" />
 
-        <TextView
-            android:id="@+id/status_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Filtrage arrêté"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp" />
-
-        <Button
-            android:id="@+id/toggle_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Démarrer le filtrage" />
-
-        <Button
-            android:id="@+id/pause_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Pause"
-            android:visibility="gone" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#DDDDDD"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="12dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Réglages"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:layout_marginBottom="8dp" />
-
+        <!-- ===== Carte État ===== -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Bloquer le DNS chiffré (DoH)" />
-
-            <Switch
-                android:id="@+id/doh_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Démarrer au démarrage du téléphone" />
-
-            <Switch
-                android:id="@+id/boot_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Mise à jour auto des listes (quotidienne)" />
-
-            <Switch
-                android:id="@+id/auto_update_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/resolver_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Résolveur : Google (8.8.8.8)"
-            android:layout_marginBottom="20dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ajouter un domaine à bloquer :"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp" />
-
-        <EditText
-            android:id="@+id/domain_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="ex. pub.exemple.com"
-            android:inputType="textUri" />
-
-        <Button
-            android:id="@+id/add_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Bloquer"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ne jamais bloquer (liste blanche) :"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp" />
-
-        <EditText
-            android:id="@+id/whitelist_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="ex. maBanque.com"
-            android:inputType="textUri" />
-
-        <Button
-            android:id="@+id/whitelist_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Autoriser"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Règles actives :"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp" />
-
-        <LinearLayout
-            android:id="@+id/rules_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="16dp" />
+            android:background="@drawable/card_bg"
+            android:padding="16dp"
+            android:layout_marginBottom="14dp">
 
-        <Button
-            android:id="@+id/update_button"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <View
+                    android:id="@+id/status_dot"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:background="@drawable/dot_off"
+                    android:layout_marginEnd="10dp" />
+
+                <TextView
+                    android:id="@+id/status_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Filtrage arrêté"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="17sp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/toggle_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="54dp"
+                android:text="Démarrer le filtrage"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:background="@drawable/btn_primary"
+                android:layout_marginTop="14dp" />
+
+            <Button
+                android:id="@+id/pause_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pause"
+                android:visibility="gone"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <!-- ===== Carte Réglages ===== -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Choisir les listes de blocage"
-            android:layout_marginBottom="8dp" />
+            android:orientation="vertical"
+            android:background="@drawable/card_bg"
+            android:padding="16dp"
+            android:layout_marginBottom="14dp">
 
-        <Button
-            android:id="@+id/themes_button"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RÉGLAGES"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:letterSpacing="0.08"
+                android:layout_marginBottom="10dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Bloquer le DNS chiffré (DoH)"
+                    android:textColor="@color/text_primary" />
+
+                <Switch
+                    android:id="@+id/doh_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Démarrer au démarrage du téléphone"
+                    android:textColor="@color/text_primary" />
+
+                <Switch
+                    android:id="@+id/boot_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Mise à jour auto des listes (quotidienne)"
+                    android:textColor="@color/text_primary" />
+
+                <Switch
+                    android:id="@+id/auto_update_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/resolver_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Résolveur : Google (8.8.8.8)"
+                android:layout_marginTop="10dp" />
+        </LinearLayout>
+
+        <!-- ===== Carte Filtres personnalisés ===== -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Filtres thématiques"
-            android:layout_marginBottom="8dp" />
+            android:orientation="vertical"
+            android:background="@drawable/card_bg"
+            android:padding="16dp"
+            android:layout_marginBottom="14dp">
 
-        <Button
-            android:id="@+id/script_button"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FILTRES PERSONNALISÉS"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:letterSpacing="0.08"
+                android:layout_marginBottom="10dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bloquer un domaine :"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/domain_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="ex. pub.exemple.com"
+                android:inputType="textUri" />
+
+            <Button
+                android:id="@+id/add_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bloquer"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ne jamais bloquer (liste blanche) :"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/whitelist_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="ex. maBanque.com"
+                android:inputType="textUri" />
+
+            <Button
+                android:id="@+id/whitelist_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Autoriser"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Règles actives :"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:id="@+id/rules_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+
+        <!-- ===== Carte Outils ===== -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Script navigateur (Tampermonkey)"
-            android:layout_marginBottom="8dp" />
+            android:orientation="vertical"
+            android:background="@drawable/card_bg"
+            android:padding="16dp"
+            android:layout_marginBottom="6dp">
 
-        <Button
-            android:id="@+id/profiles_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Profils rapides"
-            android:layout_marginBottom="8dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OUTILS"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:letterSpacing="0.08"
+                android:layout_marginBottom="10dp" />
 
-        <Button
-            android:id="@+id/schedule_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Programmation horaire"
-            android:layout_marginBottom="8dp" />
+            <Button
+                android:id="@+id/update_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Choisir les listes de blocage"
+                android:layout_marginBottom="8dp" />
 
-        <Button
-            android:id="@+id/apps_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Apps exclues du filtrage"
-            android:layout_marginBottom="8dp" />
+            <Button
+                android:id="@+id/themes_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Filtres thématiques"
+                android:layout_marginBottom="8dp" />
 
-        <Button
-            android:id="@+id/stats_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Voir les statistiques" />
+            <Button
+                android:id="@+id/profiles_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Profils rapides"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/schedule_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Programmation horaire"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/apps_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Apps exclues du filtrage"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/script_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Script navigateur (Tampermonkey)"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/stats_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Voir les statistiques" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

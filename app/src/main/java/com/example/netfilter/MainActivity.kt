@@ -43,6 +43,7 @@ class MainActivity : Activity() {
     )
 
     private lateinit var statusText: TextView
+    private lateinit var statusDot: android.view.View
     private lateinit var toggleButton: Button
     private lateinit var pauseButton: Button
     private lateinit var resolverButton: Button
@@ -57,6 +58,7 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
 
         statusText = findViewById(R.id.status_text)
+        statusDot = findViewById(R.id.status_dot)
         toggleButton = findViewById(R.id.toggle_button)
         pauseButton = findViewById(R.id.pause_button)
         resolverButton = findViewById(R.id.resolver_button)
@@ -297,6 +299,13 @@ class MainActivity : Activity() {
         }
         toggleButton.text = if (on) "Arrêter" else "Démarrer le filtrage"
         pauseButton.visibility = if (on) View.VISIBLE else View.GONE
+        statusDot.setBackgroundResource(
+            when {
+                on && paused -> R.drawable.dot_paused
+                on -> R.drawable.dot_on
+                else -> R.drawable.dot_off
+            }
+        )
     }
 
     private fun refreshRules() {
