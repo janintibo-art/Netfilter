@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NetFilter Web
 // @namespace    netfilter.web
-// @version      1.4
-// @description  Bloque des catégories de sites, les masque des recherches, cache bannières cookies et clickbait, nettoie les URL, change l'identité (ordi/téléphone), et propose un mode lecture. Compagnon navigateur de l'app NetFilter.
+// @version      1.5
+// @description  Bloque des catégories de sites, les masque des recherches, cache bannières cookies et clickbait, nettoie les URL, change l'identité, mode lecture — le tout depuis un bouton flottant dans la page. Compagnon navigateur de l'app NetFilter.
 // @author       toi
 // @match        *://*/*
 // @run-at       document-start
@@ -80,6 +80,16 @@
                 'bein.com', 'dazn.com', 'flashscore.fr', 'flashscore.com', 'livescore.com',
                 'sofascore.com', 'sport.fr', 'rmcsport.bfmtv.com', 'sportmail.fr', 'sports.fr'
             ]
+        },
+        {
+            id: 'socialmedia',
+            name: 'Réseaux sociaux',
+            domains: [
+                'facebook.com', 'fb.com', 'fbcdn.net', 'messenger.com', 'instagram.com',
+                'cdninstagram.com', 'tiktok.com', 'tiktokcdn.com', 'x.com', 'twitter.com',
+                't.co', 'twimg.com', 'snapchat.com', 'reddit.com', 'redd.it', 'pinterest.com',
+                'pinterest.fr', 'linkedin.com', 'tumblr.com', 'threads.net', 'twitch.tv'
+            ]
         }
     ];
 
@@ -150,8 +160,13 @@
         getArr(K.custom).forEach(d => set.add(String(d).toLowerCase()));
         return set;
     }
-    const blockedSet = buildBlockedSet();
-    const whitelistSet = new Set(getArr(K.whitelist).map(d => String(d).toLowerCase()));
+    let blockedSet = buildBlockedSet();
+    let whitelistSet = new Set(getArr(K.whitelist).map(d => String(d).toLowerCase()));
+
+    function rebuildSets() {
+        blockedSet = buildBlockedSet();
+        whitelistSet = new Set(getArr(K.whitelist).map(d => String(d).toLowerCase()));
+    }
 
     function matchesSet(host, set) {
         if (set.size === 0) return false;
@@ -299,8 +314,10 @@
 
     function hideCookieBanners() {
         for (const sel of COOKIE_SELECTORS) {
-            document.querySelectorAll(sel).forEach(el =>
-                el.style.setProperty('display', 'none', 'important'));
+            document.querySelectorAll(sel).forEach(el => {
+                el.dataset.nfwHidden = '1';
+                el.style.setProperty('display', 'none', 'important');
+            });
         }
         // rétablit le défilement souvent bloqué par ces bannières
         document.documentElement.style.setProperty('overflow', 'auto', 'important');
@@ -359,8 +376,10 @@
     ];
     function hideClickbait() {
         for (const sel of CLICKBAIT_SELECTORS) {
-            document.querySelectorAll(sel).forEach(el =>
-                el.style.setProperty('display', 'none', 'important'));
+            document.querySelectorAll(sel).forEach(el => {
+                el.dataset.nfwHidden = '1';
+                el.style.setProperty('display', 'none', 'important');
+            });
         }
     }
 
@@ -420,10 +439,152 @@
         obs.observe(document.documentElement, { childList: true, subtree: true });
     }
 
+    /* ------------------------------------------------------------------ *
+     *  APPLICATION À CHAUD (sans recharger)
+     * ------------------------------------------------------------------ */
+    function unhideAll() {
+        document.querySelectorAll('[data-nfw-hidden]').forEach(el => {
+            el.style.removeProperty('display');
+            el.removeAttribute('data-nfw-hidden');
+        });
+    }
+    function applyLive() {
+        rebuildSets();
+        unhideAll();
+        try { processPage(); } catch (e) {}
+    }
+    function setIdentity(mode) {
+        setVal(K.ua, mode);
+        try { sessionStorage.setItem('nfw-panel-open', '1'); } catch (e) {}
+        location.reload(); // l'identité ne s'applique qu'au chargement
+    }
+
+    /* ------------------------------------------------------------------ *
+     *  BOUTON FLOTTANT + PANNEAU DE RÉGLAGES (dans la page)
+     * ------------------------------------------------------------------ */
+    function css(el, o) { for (const k in o) el.style[k] = o[k]; }
+
+    function section(text) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        css(d, { fontWeight: 'bold', fontSize: '11px', color: '#5E6B7B',
+            textTransform: 'uppercase', letterSpacing: '.05em', margin: '12px 0 6px' });
+        return d;
+    }
+    function checkboxRow(label, get, set) {
+        const row = document.createElement('label');
+        css(row, { display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '6px 0', cursor: 'pointer', gap: '8px' });
+        const span = document.createElement('span');
+        span.textContent = label; css(span, { flex: '1', lineHeight: '1.3' });
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.checked = !!get();
+        css(cb, { width: '20px', height: '20px', flex: '0 0 auto' });
+        cb.addEventListener('change', () => set(cb.checked));
+        row.appendChild(span); row.appendChild(cb);
+        return row;
+    }
+    function radioRow(name, label, checked, onSel) {
+        const row = document.createElement('label');
+        css(row, { display: 'flex', alignItems: 'center', padding: '6px 0', cursor: 'pointer', gap: '8px' });
+        const rb = document.createElement('input');
+        rb.type = 'radio'; rb.name = name; rb.checked = checked;
+        css(rb, { width: '18px', height: '18px' });
+        rb.addEventListener('change', () => { if (rb.checked) onSel(); });
+        const span = document.createElement('span');
+        span.textContent = label; css(span, { flex: '1' });
+        row.appendChild(rb); row.appendChild(span);
+        return row;
+    }
+    function actionButton(label, onClick) {
+        const b = document.createElement('button');
+        b.textContent = label;
+        css(b, { display: 'block', width: '100%', textAlign: 'left', padding: '9px 10px',
+            margin: '4px 0', border: '0', borderRadius: '8px', background: '#EAF1FA',
+            color: '#0C2A47', fontSize: '14px', cursor: 'pointer' });
+        b.addEventListener('click', onClick);
+        return b;
+    }
+
+    function buildPanel() {
+        if (!document.body || document.getElementById('nfw-fab')) return;
+
+        const fab = document.createElement('div');
+        fab.id = 'nfw-fab';
+        fab.textContent = '\uD83D\uDEE1';
+        css(fab, { position: 'fixed', bottom: '16px', right: '16px', zIndex: '2147483647',
+            width: '44px', height: '44px', borderRadius: '50%',
+            background: 'linear-gradient(135deg,#1877D2,#17BEC4)', color: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '22px', boxShadow: '0 2px 8px rgba(0,0,0,.35)', cursor: 'pointer',
+            opacity: '0.75', userSelect: 'none' });
+
+        const panel = document.createElement('div');
+        panel.id = 'nfw-panel';
+        css(panel, { position: 'fixed', bottom: '70px', right: '16px', zIndex: '2147483647',
+            width: '270px', maxHeight: '72vh', overflowY: 'auto', boxSizing: 'border-box',
+            background: '#fff', color: '#0C2A47', borderRadius: '14px',
+            boxShadow: '0 6px 24px rgba(0,0,0,.35)', padding: '12px 14px',
+            font: '14px system-ui,Segoe UI,Roboto,sans-serif', display: 'none' });
+
+        const title = document.createElement('div');
+        title.textContent = 'NetFilter Web';
+        css(title, { fontWeight: 'bold', fontSize: '16px', marginBottom: '2px' });
+        panel.appendChild(title);
+
+        panel.appendChild(section('Bloquer ces sites'));
+        for (const cat of CATEGORIES) {
+            panel.appendChild(checkboxRow(cat.name,
+                () => isCatEnabled(cat.id),
+                v => { setVal(K.cat(cat.id), v); applyLive(); }));
+        }
+
+        panel.appendChild(section('Affichage'));
+        panel.appendChild(checkboxRow("Bloquer l'accès aux sites", blockNavOn, v => setVal(K.blockNav, v)));
+        panel.appendChild(checkboxRow('Masquer dans les recherches', hideSearchOn, v => { setVal(K.hideSearch, v); applyLive(); }));
+        panel.appendChild(checkboxRow('Masquer les liens partout', hideAllOn, v => { setVal(K.hideAll, v); applyLive(); }));
+        panel.appendChild(checkboxRow('Bannières cookies', cookiesOn, v => { setVal(K.cookies, v); applyLive(); }));
+        panel.appendChild(checkboxRow('Blocs de clickbait', clickbaitOn, v => { setVal(K.clickbait, v); applyLive(); }));
+        panel.appendChild(checkboxRow('Nettoyer les URL', cleanUrlsOn, v => { setVal(K.cleanurls, v); applyLive(); }));
+
+        panel.appendChild(section('Identité'));
+        const uaMode = getVal(K.ua, 'auto');
+        panel.appendChild(radioRow('nfw-ua', 'Automatique', uaMode === 'auto', () => setIdentity('auto')));
+        panel.appendChild(radioRow('nfw-ua', 'Ordinateur', uaMode === 'desktop', () => setIdentity('desktop')));
+        panel.appendChild(radioRow('nfw-ua', 'Téléphone', uaMode === 'mobile', () => setIdentity('mobile')));
+
+        panel.appendChild(section('Actions'));
+        panel.appendChild(actionButton('\uD83D\uDCD6 Mode lecture', () => { try { enableReadingMode(); } catch (e) {} }));
+        panel.appendChild(actionButton('\u2795 Bloquer un domaine\u2026', () => {
+            const d = prompt('Domaine à bloquer (ex. exemple.com) :');
+            if (d && d.trim()) { const a = getArr(K.custom); a.push(d.trim().toLowerCase()); setArr(K.custom, a); applyLive(); }
+        }));
+        panel.appendChild(actionButton('\u2714 Autoriser un domaine\u2026', () => {
+            const d = prompt('Domaine à ne jamais bloquer :');
+            if (d && d.trim()) { const a = getArr(K.whitelist); a.push(d.trim().toLowerCase()); setArr(K.whitelist, a); applyLive(); }
+        }));
+
+        fab.addEventListener('click', () => {
+            const open = panel.style.display !== 'none';
+            panel.style.display = open ? 'none' : 'block';
+            fab.style.opacity = open ? '0.75' : '1';
+        });
+
+        document.body.appendChild(fab);
+        document.body.appendChild(panel);
+
+        try {
+            if (sessionStorage.getItem('nfw-panel-open') === '1') {
+                sessionStorage.removeItem('nfw-panel-open');
+                panel.style.display = 'block'; fab.style.opacity = '1';
+            }
+        } catch (e) {}
+    }
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startObserver);
+        document.addEventListener('DOMContentLoaded', () => { startObserver(); buildPanel(); });
     } else {
-        startObserver();
+        startObserver(); buildPanel();
     }
 
     /* ------------------------------------------------------------------ *

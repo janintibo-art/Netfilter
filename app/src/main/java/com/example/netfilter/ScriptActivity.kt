@@ -87,7 +87,7 @@ class ScriptActivity : Activity() {
         • Choisir de te faire passer pour un ordinateur ou un téléphone.
         • Mode lecture pour épurer une page.
 
-        Tout s'active/se désactive depuis le menu de l'icône Tampermonkey pendant ta navigation.
+        Une fois installé, un petit bouton flottant 🛡 apparaît en bas à droite des pages : appuie dessus pour ouvrir un panneau et cocher/décocher toutes les options (catégories, cookies, clickbait, identité…), directement dans la page. (Les réglages restent aussi accessibles depuis le menu de l'icône Tampermonkey.)
 
         ⚠️ Il ne remplace pas le blocage pub/traqueurs : pour ça, garde l'app NetFilter et/ou ajoute uBlock Origin. Les deux se complètent.
 

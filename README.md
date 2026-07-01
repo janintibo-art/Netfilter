@@ -16,6 +16,15 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v2.4)
+
+- **Panneau de réglages flottant** (script v1.5) — un petit bouton 🛡 en bas à droite de chaque
+  page ouvre un panneau intégré avec **toutes les cases à cocher** (catégories, cookies, clickbait,
+  nettoyage d'URL, identité) + les actions (mode lecture, ajout de domaines). Fini de fouiller le
+  menu de Tampermonkey : tout est accessible d'un geste, sur la page, et s'applique immédiatement
+  sans recharger. Ajout aussi de la catégorie « Réseaux sociaux » côté script (parité avec l'app).
+
 ## Nouveautés (v2.3) — refonte visuelle
 
 - **Thème de marque** (bleu/teal du logo) appliqué à toute l'app : accent teal sur les
