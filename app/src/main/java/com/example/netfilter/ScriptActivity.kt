@@ -79,8 +79,15 @@ class ScriptActivity : Activity() {
     private fun tutorial(): String = """
         NetFilter Web est un petit script qui complète l'app dans ton navigateur. Il fait ce que le filtrage DNS ne peut pas :
 
-        • Bloquer l'accès à des sites entiers (Bolloré, extrême droite, multinationales, foot, sport) — même quand le navigateur chiffre son DNS.
+        • Bloquer l'accès à des sites entiers (Bolloré, extrême droite, multinationales, foot, sport, réseaux sociaux) — même quand le navigateur chiffre son DNS.
         • Les faire disparaître des résultats de recherche (Google, Bing, DuckDuckGo, Qwant…).
+        • Masquer les bannières « cookies » (consentement) sur la plupart des sites.
+        • Masquer les blocs de clickbait (Taboola, Outbrain…).
+        • Nettoyer les URL : retirer les mouchards de suivi (utm_*, fbclid…) et déballer les redirections Google.
+        • Choisir de te faire passer pour un ordinateur ou un téléphone.
+        • Mode lecture pour épurer une page.
+
+        Tout s'active/se désactive depuis le menu de l'icône Tampermonkey pendant ta navigation.
 
         ⚠️ Il ne remplace pas le blocage pub/traqueurs : pour ça, garde l'app NetFilter et/ou ajoute uBlock Origin. Les deux se complètent.
 
