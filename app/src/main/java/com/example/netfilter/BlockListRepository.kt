@@ -3,8 +3,18 @@ package com.example.netfilter
 import android.content.Context
 import java.net.URL
 
+/** Une liste de blocage téléchargeable du catalogue. */
+data class ListSource(
+    val id: String,
+    val name: String,
+    val description: String,
+    val url: String
+)
+
 /**
- * Gère règles de filtrage ET réglages (résolveur amont, démarrage au boot).
+ * Gère toutes les règles de filtrage ET les réglages.
+ * Sources : catalogue de listes activables, listes perso (URL), blocage DoH,
+ * blocage des médias Bolloré, domaines perso, et liste blanche (traitée par le service).
  */
 object BlockListRepository {
 
@@ -12,7 +22,9 @@ object BlockListRepository {
     private const val KEY_CUSTOM = "custom_domains"
     private const val KEY_WHITELIST = "whitelist_domains"
     private const val KEY_SOURCES = "list_sources"
+    private const val KEY_ENABLED_LISTS = "enabled_lists"
     private const val KEY_BLOCK_DOH = "block_doh"
+    private const val KEY_BLOCK_BOLLORE = "block_bollore"
     private const val KEY_UPSTREAM = "upstream_dns"
     private const val KEY_START_ON_BOOT = "start_on_boot"
     private const val KEY_EXCLUDED_APPS = "excluded_apps"
@@ -21,6 +33,36 @@ object BlockListRepository {
 
     const val DEFAULT_UPSTREAM = "8.8.8.8"
 
+    /** Catalogue de listes proposées (URL vérifiées, format hosts / domaines / Adblock). */
+    val CATALOG = listOf(
+        ListSource(
+            "stevenblack", "StevenBlack (base)",
+            "Pub + traqueurs + malware. Bon point de départ.",
+            "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+        ),
+        ListSource(
+            "hagezi_light", "HaGeZi Light",
+            "Légère, quasi aucun faux positif.",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/light.txt"
+        ),
+        ListSource(
+            "hagezi_normal", "HaGeZi Normal",
+            "Équilibrée. Recommandée pour un usage courant.",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/normal.txt"
+        ),
+        ListSource(
+            "hagezi_pro", "HaGeZi Pro",
+            "Agressive, meilleure protection (peut casser quelques sites).",
+            "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/pro.txt"
+        ),
+        ListSource(
+            "phishing_army", "Phishing Army",
+            "Anti-hameçonnage et sites malveillants.",
+            "https://phishing.army/download/phishing_army_blocklist_extended.txt"
+        )
+    )
+
+    /** Ensemble des domaines à BLOQUER (la liste blanche est gérée à part par le service). */
     fun load(context: Context): Set<String> {
         val result = HashSet<String>()
         runCatching {
@@ -40,18 +82,52 @@ object BlockListRepository {
                 }
             }
         }
+        if (isBlockBollore(context)) {
+            runCatching {
+                context.assets.open("bollore-blocklist.txt").bufferedReader().forEachLine {
+                    parseLine(it)?.let(result::add)
+                }
+            }
+        }
         result.addAll(getCustomDomains(context))
         return result
     }
 
+    /**
+     * Nettoie une ligne. Gère : format hosts ("0.0.0.0 domaine"), domaine simple,
+     * et format Adblock ("||domaine^"). Ignore commentaires, règles cosmétiques,
+     * règles d'exception (@@), regex et jokers.
+     */
     private fun parseLine(raw: String): String? {
-        var line = raw.trim()
+        val line = raw.trim()
         if (line.isEmpty() || line.startsWith("#") || line.startsWith("!")) return null
-        if (line.startsWith("0.0.0.0") || line.startsWith("127.0.0.1")) {
-            line = line.substringAfter(' ').trim().substringBefore(' ')
+        if (line.startsWith("@@")) return null // règle d'autorisation Adblock
+        if (line.contains("##") || line.contains("#@#") || line.contains("#?#") || line.contains("#$#")) {
+            return null // règle cosmétique Adblock
         }
-        line = line.substringBefore('#').trim()
-        return if (line.isNotEmpty() && line.contains('.')) line.lowercase() else null
+        if (line.startsWith("/")) return null // regex Adblock
+
+        var domain: String = if (line.startsWith("||")) {
+            // format Adblock réseau : ||domaine^...
+            var d = line.substring(2)
+            val cut = d.indexOfFirst { it == '^' || it == '/' || it == '$' || it == '|' || it == '*' || it == '?' || it == ' ' }
+            if (cut >= 0) d = d.substring(0, cut)
+            d
+        } else if (line.startsWith("0.0.0.0") || line.startsWith("127.0.0.1")) {
+            // format hosts
+            line.substringAfter(' ').trim().substringBefore(' ').substringBefore('\t')
+        } else {
+            // domaine simple par ligne (on retire un éventuel commentaire en fin)
+            line.substringBefore('#').trim().substringBefore(' ').substringBefore('\t')
+        }
+
+        domain = domain.trim().lowercase()
+        val valid = domain.isNotEmpty() &&
+            domain.contains('.') &&
+            !domain.contains('*') &&
+            !domain.contains('/') &&
+            !domain.contains(' ')
+        return if (valid) domain else null
     }
 
     // --- Domaines bloqués perso ---
@@ -84,12 +160,33 @@ object BlockListRepository {
         prefs(context).edit().putStringSet(KEY_WHITELIST, set).apply()
     }
 
+    // --- Catalogue de listes ---
+    fun getEnabledListIds(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_ENABLED_LISTS, setOf("stevenblack")) ?: setOf("stevenblack")
+
+    fun isListEnabled(context: Context, id: String): Boolean =
+        getEnabledListIds(context).contains(id)
+
+    fun setListEnabled(context: Context, id: String, enabled: Boolean) {
+        val set = getEnabledListIds(context).toMutableSet()
+        if (enabled) set.add(id) else set.remove(id)
+        prefs(context).edit().putStringSet(KEY_ENABLED_LISTS, set).apply()
+    }
+
     // --- Blocage DoH ---
     fun isDohBlockingEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_BLOCK_DOH, true)
 
     fun setDohBlocking(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_BLOCK_DOH, enabled).apply()
+    }
+
+    // --- Blocage des médias Bolloré ---
+    fun isBlockBollore(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_BLOCK_BOLLORE, false)
+
+    fun setBlockBollore(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_BLOCK_BOLLORE, enabled).apply()
     }
 
     // --- Résolveur DNS amont ---
@@ -108,7 +205,7 @@ object BlockListRepository {
         prefs(context).edit().putBoolean(KEY_START_ON_BOOT, enabled).apply()
     }
 
-    // --- Apps exclues du filtrage (packages qui contournent le VPN) ---
+    // --- Apps exclues du filtrage ---
     fun getExcludedApps(context: Context): Set<String> =
         prefs(context).getStringSet(KEY_EXCLUDED_APPS, emptySet()) ?: emptySet()
 
@@ -116,7 +213,7 @@ object BlockListRepository {
         prefs(context).edit().putStringSet(KEY_EXCLUDED_APPS, HashSet(packages)).apply()
     }
 
-    // --- Mise à jour automatique des listes ---
+    // --- Mise à jour automatique ---
     fun isAutoUpdateEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_AUTO_UPDATE, false)
 
@@ -124,18 +221,26 @@ object BlockListRepository {
         prefs(context).edit().putBoolean(KEY_AUTO_UPDATE, enabled).apply()
     }
 
-    // --- Listes distantes ---
+    // --- URL perso (avancé) ---
     fun getSources(context: Context): Set<String> =
-        prefs(context).getStringSet(KEY_SOURCES, defaultSources()) ?: defaultSources()
+        prefs(context).getStringSet(KEY_SOURCES, emptySet()) ?: emptySet()
 
     fun addSource(context: Context, url: String) {
         val set = getSources(context).toMutableSet().apply { add(url) }
         prefs(context).edit().putStringSet(KEY_SOURCES, set).apply()
     }
 
+    /**
+     * Télécharge les listes activées du catalogue (+ URL perso) et met le cache à jour.
+     * À appeler hors du thread principal. Renvoie le nombre de domaines chargés.
+     */
     fun refreshDownloadedLists(context: Context): Int {
         val domains = LinkedHashSet<String>()
-        for (url in getSources(context)) {
+        val urls = LinkedHashSet<String>()
+        CATALOG.filter { isListEnabled(context, it.id) }.forEach { urls.add(it.url) }
+        urls.addAll(getSources(context))
+
+        for (url in urls) {
             runCatching {
                 URL(url).openStream().bufferedReader().forEachLine {
                     parseLine(it)?.let(domains::add)
@@ -147,10 +252,6 @@ object BlockListRepository {
         }
         return domains.size
     }
-
-    private fun defaultSources() = setOf(
-        "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-    )
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

@@ -7,6 +7,24 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v1.5)
+
+- **Choix des listes de blocage** — nouvel écran « Choisir les listes de blocage » avec un
+  catalogue de listes activables (cases à cocher), puis un bouton « Télécharger et appliquer » :
+  - StevenBlack (pub + traqueurs + malware) — le défaut
+  - HaGeZi Light / Normal / Pro (du plus léger au plus agressif)
+  - Phishing Army (anti-hameçonnage / sites malveillants)
+  Toutes les URL ont été vérifiées. Tu peux en cumuler plusieurs.
+- **Bloqueur médias Bolloré** — interrupteur (désactivé par défaut) qui bloque les sites des
+  médias du groupe Bolloré (CNews, Europe 1, JDD, Canal+, C8, Dailymotion, et les magazines
+  Prisma : Gala, Capital, Géo, Voici, Femme Actuelle…). La liste est dans
+  `assets/bollore-blocklist.txt` et se veut **éditable** : l'actionnariat évolue (scission de
+  Vivendi fin 2024) et certains titres ne sont détenus que partiellement — ajoute ou retire
+  des domaines à ta convenance, ou mets-en un en liste blanche.
+- **Analyseur plus robuste** — les listes au format « Adblock » (`||domaine^`) sont désormais
+  comprises, en plus des formats hosts et « un domaine par ligne ».
+
 ## Nouveautés (v1.4) — durcissement
 
 - **Support IPv6** — les requêtes AAAA sont désormais filtrées (le tunnel gère IPv4 et

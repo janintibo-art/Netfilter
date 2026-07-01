@@ -17,7 +17,6 @@ import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import kotlin.concurrent.thread
 
 class MainActivity : Activity() {
 
@@ -59,6 +58,7 @@ class MainActivity : Activity() {
         val dohSwitch = findViewById<Switch>(R.id.doh_switch)
         val bootSwitch = findViewById<Switch>(R.id.boot_switch)
         val autoUpdateSwitch = findViewById<Switch>(R.id.auto_update_switch)
+        val bolloreSwitch = findViewById<Switch>(R.id.bollore_switch)
 
         toggleButton.setOnClickListener {
             if (FilterVpnService.isRunning) stopFiltering() else requestVpnThenStart()
@@ -101,15 +101,14 @@ class MainActivity : Activity() {
             if (checked) UpdateWorker.schedule(this) else UpdateWorker.cancel(this)
         }
 
+        bolloreSwitch.isChecked = BlockListRepository.isBlockBollore(this)
+        bolloreSwitch.setOnCheckedChangeListener { _, checked ->
+            BlockListRepository.setBlockBollore(this, checked)
+            reloadService()
+        }
+
         findViewById<Button>(R.id.update_button).setOnClickListener {
-            Toast.makeText(this, "Téléchargement des listes…", Toast.LENGTH_SHORT).show()
-            thread {
-                val count = BlockListRepository.refreshDownloadedLists(this)
-                runOnUiThread {
-                    Toast.makeText(this, "$count domaines chargés", Toast.LENGTH_LONG).show()
-                    reloadService()
-                }
-            }
+            startActivity(Intent(this, ListsActivity::class.java))
         }
 
         findViewById<Button>(R.id.apps_button).setOnClickListener {

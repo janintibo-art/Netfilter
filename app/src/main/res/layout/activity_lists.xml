@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Listes de blocage"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Coche les listes à activer, puis télécharge. Plus la liste est agressive, plus elle bloque… et plus elle risque de casser un site."
+        android:textSize="13sp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp" />
+
+    <ListView
+        android:id="@+id/lists_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/lists_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:visibility="gone"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/lists_apply"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Télécharger et appliquer"
+        android:layout_marginTop="8dp" />
+</LinearLayout>
