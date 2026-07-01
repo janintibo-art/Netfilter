@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NetFilter Web
 // @namespace    netfilter.web
-// @version      1.2
-// @description  Bloque des catégories de sites, les masque des recherches, cache les bannières cookies, et permet de se faire passer pour un ordinateur ou un téléphone. Compagnon navigateur de l'app NetFilter.
+// @version      1.3
+// @description  Bloque des catégories de sites, les masque des recherches, cache bannières cookies et blocs de clickbait, nettoie les URL (mouchards + redirections), et change l'identité (ordi/téléphone). Compagnon navigateur de l'app NetFilter.
 // @author       toi
 // @match        *://*/*
 // @run-at       document-start
@@ -94,7 +94,9 @@
         hideSearch: 'nfw-hide-search',
         hideAll: 'nfw-hide-all',
         ua: 'nfw-ua',
-        cookies: 'nfw-cookies'
+        cookies: 'nfw-cookies',
+        clickbait: 'nfw-clickbait',
+        cleanurls: 'nfw-cleanurls'
     };
     const getVal = (k, d) => GM_getValue(k, d);
     const setVal = (k, v) => GM_setValue(k, v);
@@ -134,6 +136,8 @@
     const hideSearchOn = () => getVal(K.hideSearch, true) === true;
     const hideAllOn = () => getVal(K.hideAll, false) === true;
     const cookiesOn = () => getVal(K.cookies, true) === true;
+    const clickbaitOn = () => getVal(K.clickbait, true) === true;
+    const cleanUrlsOn = () => getVal(K.cleanurls, true) === true;
 
     /* ------------------------------------------------------------------ *
      *  ENSEMBLES DE DOMAINES (bloqués / liste blanche)
@@ -306,6 +310,65 @@
     function processPage() {
         try { runHiding(); } catch (e) {}
         try { if (cookiesOn()) hideCookieBanners(); } catch (e) {}
+        try { if (clickbaitOn()) hideClickbait(); } catch (e) {}
+        try { if (cleanUrlsOn()) { cleanLinks(); cleanCurrentUrl(); } } catch (e) {}
+    }
+
+    /* Masque les encarts de « contenu recommandé » sponsorisé (Taboola, Outbrain…). */
+    const CLICKBAIT_SELECTORS = [
+        '[id^="taboola"]', '.taboola', '.trc_related_container', '.trc_rbox_container',
+        'div[data-placement*="taboola" i]',
+        '#taboola-below-article-thumbnails', '#taboola-right-rail-thumbnails',
+        '.OUTBRAIN', '.ob-widget', '[id^="outbrain_widget"]', 'div[data-ob-template]',
+        '.ob-smartfeed-wrapper'
+    ];
+    function hideClickbait() {
+        for (const sel of CLICKBAIT_SELECTORS) {
+            document.querySelectorAll(sel).forEach(el =>
+                el.style.setProperty('display', 'none', 'important'));
+        }
+    }
+
+    /* Nettoyage d'URL : retire les paramètres de suivi et déballe les redirections. */
+    const TRACK_PARAMS = new Set([
+        'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id',
+        'fbclid', 'gclid', 'gclsrc', 'dclid', 'msclkid', 'mc_eid', 'mc_cid', 'igshid',
+        'twclid', 'yclid', '_openstat', 'vero_id', 'wickedid', 'oly_enc_id', 'oly_anon_id',
+        'ref_src', 'ref_url', 'spm', 'cmpid', 'icid'
+    ]);
+    function cleanOneUrl(raw) {
+        try {
+            const url = new URL(raw, location.href);
+            let changed = false;
+            for (const p of Array.from(url.searchParams.keys())) {
+                if (TRACK_PARAMS.has(p.toLowerCase())) { url.searchParams.delete(p); changed = true; }
+            }
+            return changed ? url.href : null;
+        } catch (e) { return null; }
+    }
+    function unwrapRedirect(raw) {
+        try {
+            const url = new URL(raw, location.href);
+            if (/(^|\.)google\./.test(url.hostname) && url.pathname === '/url') {
+                const t = url.searchParams.get('q') || url.searchParams.get('url');
+                if (t && /^https?:/i.test(t)) return t;
+            }
+            return null;
+        } catch (e) { return null; }
+    }
+    function cleanLinks() {
+        document.querySelectorAll('a[href]').forEach(a => {
+            const unwrapped = unwrapRedirect(a.href);
+            if (unwrapped) a.href = unwrapped;
+            const cleaned = cleanOneUrl(a.href);
+            if (cleaned && cleaned !== a.href) a.href = cleaned;
+        });
+    }
+    function cleanCurrentUrl() {
+        const cleaned = cleanOneUrl(location.href);
+        if (cleaned && cleaned !== location.href) {
+            try { history.replaceState(history.state, '', cleaned); } catch (e) {}
+        }
     }
 
     // Débounce pour le contenu chargé dynamiquement (scroll infini, SPA, bannières tardives).
@@ -363,6 +426,14 @@
         GM_registerMenuCommand(
             (cookiesOn() ? '✅' : '⬜') + ' Masquer les bannières cookies',
             () => toggleAndReload(K.cookies, true)
+        );
+        GM_registerMenuCommand(
+            (clickbaitOn() ? '✅' : '⬜') + ' Masquer les blocs de clickbait',
+            () => toggleAndReload(K.clickbait, true)
+        );
+        GM_registerMenuCommand(
+            (cleanUrlsOn() ? '✅' : '⬜') + ' Nettoyer les URL (mouchards, redirections)',
+            () => toggleAndReload(K.cleanurls, true)
         );
 
         // Identité navigateur (téléphone / ordinateur)

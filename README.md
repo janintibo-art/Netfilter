@@ -12,6 +12,18 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v2.0)
+
+- **Masquage du clickbait** (script v1.3) — cache les encarts de « contenu recommandé »
+  sponsorisé (Taboola, Outbrain…), souvent des pièges à clics. Activable dans le menu.
+- **Nettoyage des URL** (script v1.3) — retire automatiquement les paramètres de suivi
+  (utm_*, fbclid, gclid…) des liens et de la barre d'adresse, et déballe les redirections
+  Google (`google.com/url?q=…` → site direct). Activable dans le menu.
+- **Recherche dans les statistiques** (app) — un champ pour filtrer les domaines bloqués,
+  et surtout : **appuyer sur un domaine l'ajoute à la liste blanche** (le débloque) en un
+  geste. Pratique pour comprendre ce qui est bloqué et corriger un blocage gênant.
+
 ## Nouveautés (v1.9)
 
 - **Anti-bannières cookies** (script Tampermonkey v1.2) — masque automatiquement les fenêtres

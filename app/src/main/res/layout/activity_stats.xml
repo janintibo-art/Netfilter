@@ -28,6 +28,14 @@
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
+    <EditText
+        android:id="@+id/stats_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Rechercher un domaine…"
+        android:inputType="text"
+        android:layout_marginBottom="8dp" />
+
     <ListView
         android:id="@+id/stats_list"
         android:layout_width="match_parent"
