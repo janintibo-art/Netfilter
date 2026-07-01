@@ -327,6 +327,7 @@ class FilterVpnService : VpnService() {
     private fun broadcastState() {
         sendBroadcast(Intent(ACTION_STATE_CHANGED).setPackage(packageName))
         FilterWidgetProvider.refreshAll(this)
+        StatsWidgetProvider.refreshAll(this)
         FilterTileService.refresh(this)
     }
 }

@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NetFilter Web
 // @namespace    netfilter.web
-// @version      1.3
-// @description  Bloque des catégories de sites, les masque des recherches, cache bannières cookies et blocs de clickbait, nettoie les URL (mouchards + redirections), et change l'identité (ordi/téléphone). Compagnon navigateur de l'app NetFilter.
+// @version      1.4
+// @description  Bloque des catégories de sites, les masque des recherches, cache bannières cookies et clickbait, nettoie les URL, change l'identité (ordi/téléphone), et propose un mode lecture. Compagnon navigateur de l'app NetFilter.
 // @author       toi
 // @match        *://*/*
 // @run-at       document-start
@@ -307,6 +307,41 @@
         if (document.body) document.body.style.setProperty('overflow', 'auto', 'important');
     }
 
+    /* ------------------------------------------------------------------ *
+     *  MODE LECTURE (à la demande) — épure la page pour ne garder que le texte.
+     *  Basique : le mode lecture natif de Firefox est meilleur quand il est proposé.
+     * ------------------------------------------------------------------ */
+    function enableReadingMode() {
+        const pool = document.querySelectorAll(
+            'article, main, [role="main"], .article, .post, .entry-content, #content, .content'
+        );
+        const candidates = pool.length ? pool : document.querySelectorAll('div, section');
+        let best = null, bestScore = 0;
+        candidates.forEach(el => {
+            const text = (el.innerText || '').length;
+            const paragraphs = el.querySelectorAll('p').length;
+            const score = text + paragraphs * 200;
+            if (score > bestScore) { bestScore = score; best = el; }
+        });
+        if (!best) { alert('Contenu principal introuvable sur cette page.'); return; }
+        const html = best.innerHTML;
+        const title = document.title || '';
+        document.documentElement.innerHTML = '<head><meta charset="utf-8"></head><body></body>';
+        document.title = title;
+        const style = document.createElement('style');
+        style.textContent =
+            'body{max-width:720px;margin:24px auto;padding:0 20px;' +
+            'font:18px/1.7 Georgia,"Times New Roman",serif;color:#222;background:#fafafa}' +
+            'img{max-width:100%;height:auto}a{color:#1a6}h1{font-size:26px;line-height:1.3}';
+        document.head.appendChild(style);
+        const h1 = document.createElement('h1');
+        h1.textContent = title;
+        document.body.appendChild(h1);
+        const box = document.createElement('div');
+        box.innerHTML = html;
+        document.body.appendChild(box);
+    }
+
     function processPage() {
         try { runHiding(); } catch (e) {}
         try { if (cookiesOn()) hideCookieBanners(); } catch (e) {}
@@ -446,6 +481,11 @@
         });
         GM_registerMenuCommand((uaMode === 'mobile' ? '✅' : '⬜') + ' Identité : Téléphone 📱', () => {
             setVal(K.ua, 'mobile'); location.reload();
+        });
+
+        // Mode lecture (action ponctuelle)
+        GM_registerMenuCommand('📖 Mode lecture (nettoyer la page)', () => {
+            try { enableReadingMode(); } catch (e) { alert('Mode lecture indisponible ici.'); }
         });
 
         // Règles perso

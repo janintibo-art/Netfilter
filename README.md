@@ -13,6 +13,19 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v2.1)
+
+- **Widget de statistiques** (app) — un second widget d'accueil affiche le nombre de requêtes
+  bloquées aujourd'hui ; un appui ouvre les stats détaillées. Se rafraîchit régulièrement et
+  à chaque changement d'état du filtrage. (Compteur remis à zéro chaque jour.)
+- **Blocage minuté** (app) — dans « Programmation horaire », bouton « Blocage minuté » :
+  bloque une catégorie pour une durée choisie (30 min / 1 h / 2 h / 4 h), puis la débloque
+  automatiquement. Idéal pour un créneau de concentration ponctuel.
+- **Mode lecture** (script v1.4) — entrée de menu Tampermonkey « Mode lecture » : épure la page
+  pour ne garder que le texte de l'article. Basique (le mode lecture natif de Firefox reste
+  préférable quand il est proposé), mais dépanne sur les pages qui ne le proposent pas.
+
 ## Nouveautés (v2.0)
 
 - **Masquage du clickbait** (script v1.3) — cache les encarts de « contenu recommandé »

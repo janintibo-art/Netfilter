@@ -36,5 +36,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Ajouter une règle" />
+
+        <Button
+            android:id="@+id/schedule_timer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⏱ Blocage minuté (une seule fois)"
+            android:layout_marginTop="8dp" />
     </LinearLayout>
 </ScrollView>

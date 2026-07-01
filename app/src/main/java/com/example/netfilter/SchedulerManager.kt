@@ -33,6 +33,27 @@ object SchedulerManager {
         alarmManager(context).cancel(pendingIntent(context, rule))
     }
 
+    /**
+     * Blocage ponctuel : la catégorie est déjà activée par l'appelant ; on programme un
+     * réveil unique dans `minutes` pour la désactiver. Utilise un espace de codes distinct
+     * (900000+) pour ne pas entrer en collision avec les règles récurrentes.
+     */
+    fun startTemporaryBlock(context: Context, themeId: String, minutes: Int) {
+        val idx = BlockListRepository.THEMES.indexOfFirst { it.id == themeId }.coerceAtLeast(0)
+        val intent = Intent(context, ScheduleReceiver::class.java)
+            .putExtra(EXTRA_THEME, themeId)
+            .putExtra(EXTRA_ENABLE, false)
+        val pi = PendingIntent.getBroadcast(
+            context, 900000 + idx, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager(context).setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + minutes * 60_000L,
+            pi
+        )
+    }
+
     private fun pendingIntent(context: Context, rule: ScheduleRule): PendingIntent {
         val intent = Intent(context, ScheduleReceiver::class.java)
             .putExtra(EXTRA_THEME, rule.themeId)

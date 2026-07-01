@@ -3,11 +3,13 @@ package com.example.netfilter
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import java.util.Calendar
 
 /**
@@ -23,7 +25,40 @@ class ScheduleActivity : Activity() {
         setContentView(R.layout.activity_schedule)
         rulesContainer = findViewById(R.id.schedule_container)
         findViewById<Button>(R.id.schedule_add).setOnClickListener { addRuleFlow() }
+        findViewById<Button>(R.id.schedule_timer).setOnClickListener { timerFlow() }
         refreshRules()
+    }
+
+    /** Blocage ponctuel : bloque une catégorie maintenant, puis la débloque après un délai. */
+    private fun timerFlow() {
+        val themes = BlockListRepository.THEMES
+        val names = themes.map { it.name }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Bloquer temporairement…")
+            .setItems(names) { _, i ->
+                val theme = themes[i]
+                val labels = arrayOf("30 minutes", "1 heure", "2 heures", "4 heures")
+                val minutes = intArrayOf(30, 60, 120, 240)
+                AlertDialog.Builder(this)
+                    .setTitle("Pendant combien de temps ?")
+                    .setItems(labels) { _, d ->
+                        BlockListRepository.setThemeEnabled(this, theme.id, true)
+                        if (FilterVpnService.isRunning) {
+                            startService(
+                                Intent(this, FilterVpnService::class.java)
+                                    .setAction(FilterVpnService.ACTION_RELOAD)
+                            )
+                        }
+                        SchedulerManager.startTemporaryBlock(this, theme.id, minutes[d])
+                        Toast.makeText(
+                            this,
+                            "${theme.name} bloqué pour ${labels[d]}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    .show()
+            }
+            .show()
     }
 
     private fun addRuleFlow() {
