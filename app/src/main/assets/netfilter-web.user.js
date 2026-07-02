@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         NetFilter Web
 // @namespace    netfilter.web
-// @version      1.5
-// @description  Bloque des catégories de sites, les masque des recherches, cache bannières cookies et clickbait, nettoie les URL, change l'identité, mode lecture — le tout depuis un bouton flottant dans la page. Compagnon navigateur de l'app NetFilter.
+// @version      1.6
+// @description  Bloque des catégories de sites, les masque des recherches, cache bannières cookies et clickbait, nettoie les URL, change l'identité, mode lecture — via un petit bouton flottant déplaçable. Compagnon navigateur de l'app NetFilter.
 // @author       toi
 // @match        *://*/*
 // @run-at       document-start
@@ -513,11 +513,11 @@
         fab.id = 'nfw-fab';
         fab.textContent = '\uD83D\uDEE1';
         css(fab, { position: 'fixed', bottom: '16px', right: '16px', zIndex: '2147483647',
-            width: '44px', height: '44px', borderRadius: '50%',
+            width: '36px', height: '36px', borderRadius: '50%',
             background: 'linear-gradient(135deg,#1877D2,#17BEC4)', color: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '22px', boxShadow: '0 2px 8px rgba(0,0,0,.35)', cursor: 'pointer',
-            opacity: '0.75', userSelect: 'none' });
+            fontSize: '18px', boxShadow: '0 2px 6px rgba(0,0,0,.3)', cursor: 'pointer',
+            opacity: '0.4', userSelect: 'none', touchAction: 'none' });
 
         const panel = document.createElement('div');
         panel.id = 'nfw-panel';
@@ -564,19 +564,83 @@
             if (d && d.trim()) { const a = getArr(K.whitelist); a.push(d.trim().toLowerCase()); setArr(K.whitelist, a); applyLive(); }
         }));
 
-        fab.addEventListener('click', () => {
-            const open = panel.style.display !== 'none';
-            panel.style.display = open ? 'none' : 'block';
-            fab.style.opacity = open ? '0.75' : '1';
-        });
+        const IDLE_OPACITY = '0.4';
+        const POS_KEY = 'nfw-fab-pos';
+
+        function positionPanel() {
+            const r = fab.getBoundingClientRect();
+            const pw = panel.offsetWidth || 270;
+            const ph = panel.offsetHeight || 300;
+            let left = Math.max(6, Math.min(window.innerWidth - pw - 6, r.right - pw));
+            let top = (r.top > window.innerHeight / 2) ? (r.top - ph - 8) : (r.bottom + 8);
+            top = Math.max(6, Math.min(window.innerHeight - ph - 6, top));
+            panel.style.left = left + 'px'; panel.style.top = top + 'px';
+            panel.style.right = 'auto'; panel.style.bottom = 'auto';
+        }
+        function togglePanel() {
+            if (panel.style.display !== 'none') {
+                panel.style.display = 'none'; fab.style.opacity = IDLE_OPACITY;
+            } else {
+                panel.style.display = 'block'; positionPanel(); fab.style.opacity = '1';
+            }
+        }
 
         document.body.appendChild(fab);
         document.body.appendChild(panel);
 
+        // Position enregistrée (sinon coin bas-droit par défaut)
+        try {
+            const p = JSON.parse(getVal(POS_KEY, ''));
+            if (p && typeof p.x === 'number') {
+                const x = Math.max(4, Math.min(window.innerWidth - fab.offsetWidth - 4, p.x));
+                const y = Math.max(4, Math.min(window.innerHeight - fab.offsetHeight - 4, p.y));
+                fab.style.left = x + 'px'; fab.style.top = y + 'px';
+                fab.style.right = 'auto'; fab.style.bottom = 'auto';
+            }
+        } catch (e) {}
+
+        // Glisser pour déplacer / appui simple pour ouvrir
+        let dragging = false, moved = false, sX = 0, sY = 0, oX = 0, oY = 0;
+        fab.addEventListener('pointerdown', e => {
+            dragging = true; moved = false;
+            sX = e.clientX; sY = e.clientY;
+            const r = fab.getBoundingClientRect(); oX = r.left; oY = r.top;
+            fab.style.left = r.left + 'px'; fab.style.top = r.top + 'px';
+            fab.style.right = 'auto'; fab.style.bottom = 'auto';
+            try { fab.setPointerCapture(e.pointerId); } catch (ex) {}
+            e.preventDefault();
+        });
+        fab.addEventListener('pointermove', e => {
+            if (!dragging) return;
+            const dx = e.clientX - sX, dy = e.clientY - sY;
+            if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+            const nx = Math.max(4, Math.min(window.innerWidth - fab.offsetWidth - 4, oX + dx));
+            const ny = Math.max(4, Math.min(window.innerHeight - fab.offsetHeight - 4, oY + dy));
+            fab.style.left = nx + 'px'; fab.style.top = ny + 'px';
+            if (panel.style.display !== 'none') positionPanel();
+        });
+        fab.addEventListener('pointerup', () => {
+            if (!dragging) return;
+            dragging = false;
+            if (moved) {
+                setVal(POS_KEY, JSON.stringify({ x: parseInt(fab.style.left, 10), y: parseInt(fab.style.top, 10) }));
+            } else {
+                togglePanel();
+            }
+        });
+
+        // Appui en dehors -> ferme le panneau
+        document.addEventListener('pointerdown', e => {
+            if (panel.style.display !== 'none' && !panel.contains(e.target) && e.target !== fab && !fab.contains(e.target)) {
+                panel.style.display = 'none'; fab.style.opacity = IDLE_OPACITY;
+            }
+        }, true);
+
+        // Réouverture après reload (changement d'identité)
         try {
             if (sessionStorage.getItem('nfw-panel-open') === '1') {
                 sessionStorage.removeItem('nfw-panel-open');
-                panel.style.display = 'block'; fab.style.opacity = '1';
+                panel.style.display = 'block'; positionPanel(); fab.style.opacity = '1';
             }
         } catch (e) {}
     }

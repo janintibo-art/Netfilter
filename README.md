@@ -17,6 +17,14 @@ avec un widget marche/arrêt. **Sans root.**
 
 
 
+
+## Nouveautés (v2.5)
+
+- **Bouton flottant discret et déplaçable** (script v1.6) — le bouton 🛡 est plus petit et
+  translucide au repos ; un appui simple ouvre le panneau, un glissement le déplace n'importe
+  où sur l'écran, et sa position est mémorisée. Un appui en dehors referme le panneau. Moins
+  invasif, tout en gardant l'accès rapide à tous les réglages.
+
 ## Nouveautés (v2.4)
 
 - **Panneau de réglages flottant** (script v1.5) — un petit bouton 🛡 en bas à droite de chaque
